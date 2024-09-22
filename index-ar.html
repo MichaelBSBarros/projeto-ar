@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebAR Project with Animation</title>
+    <!-- Carregar a biblioteca A-Frame -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- Carregar AR.js para A-Frame -->
+    <script src="https://rawcdn.githack.com/jeromeetienne/ar.js/1.7.7/aframe/build/aframe-ar.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      #score {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 100px;
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      #shot {
+        position: absolute;
+        top: 47%;
+        right: 45%;
+        transform: translate(-50%, -50%);
+        font-size: 50px;
+        color: white;
+        /* background: rgba(0, 0, 0, 0.5); */
+        padding: 10px;
+        border-radius: 8px;
+        display: none; /* Esconde o elemento inicialmente */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Exibir a pontuação -->
+    <div id="score">Pontuação: 0</div>
+
+    <div id="shot">+1</div>
+
+    <!-- AR.js setup -->
+    <a-scene embedded arjs>
+      <!-- Objeto associado ao marcador -->
+      <a-marker preset="hiro" id="hiroMarker">
+        <!-- O cubo não tem posição fixa definida, será atualizado dinamicamente -->
+        <a-box
+          id="box"
+          material="color: yellow;"
+          depth="1"
+          height="1"
+          width="1"
+        ></a-box>
+      </a-marker>
+
+      <!-- Objeto independente do marcador -->
+      <a-sphere
+        id="sphere-merged"
+        position="0 -2 2"
+        radius="0.7"
+        color="orange"
+        animation__1="property: position; to: 0 5 -30; dur: 200; easing: easeInOutSine; dir: normal; delay: 2000; startEvents: start-animation"
+        animation__2="property: position; to: 0 0 -60; dur: 500; easing: easeInOutSine; startEvents: animationcomplete__1"
+        animation__reset="property: position; to: 0 -2 2; dur: 0; easing: linear; startEvents: animationcomplete__2"
+      ></a-sphere>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      // Seleciona os elementos do cubo, da esfera, do marcador e do texto
+      const box = document.querySelector('#box');
+      const sphere = document.querySelector('#sphere-merged');
+      const marker = document.querySelector('#hiroMarker');
+      const shotText = document.getElementById('shot');
+      let score = 0;
+      let lastCollisionTime = 0;
+
+      // Inicializa a posição do cubo para fora de cena
+      box.object3D.position.set(9.9, 9.9, 9.9);
+
+      // Flag para indicar se o marcador está visível
+      let isMarkerVisible = false;
+
+      // Função para atualizar a pontuação na tela
+      function updateScore() {
+        const scoreElement = document.getElementById('score');
+        scoreElement.innerHTML = `Pontuação: ${score}`;
+      }
+
+      // Função para verificar a colisão entre a esfera e o cubo
+      function checkCollision() {
+        const boxPosition = box.object3D.position;
+        const spherePosition = sphere.object3D.position;
+
+        // Calcula a distância entre a esfera e o cubo
+        const distance = boxPosition.distanceTo(spherePosition);
+
+        console.log(boxPosition);
+        console.log(spherePosition);
+        console.log("teste");
+        console.log("##########################");
+        console.log(distance);
+        console.log("##########################");
+        console.log(spherePosition.z);
+        console.log("##########################");
+
+        // Verifica se a distância é pequena o suficiente para considerar uma colisão
+        if (distance < 5 && Date.now() - lastCollisionTime > 1000) {
+          score += 1;
+          lastCollisionTime = Date.now();
+          updateScore();
+          showShotText(); // Exibe o texto "+1" quando ocorre uma colisão
+        }
+      }
+
+      // Função para exibir o texto "+1" temporariamente
+      function showShotText() {
+        shotText.style.display = 'block'; // Mostra o texto
+        setTimeout(() => {
+          shotText.style.display = 'none'; // Esconde o texto após 1 segundo
+        }, 1000);
+      }
+
+      // Função para atualizar a posição do cubo com base na posição do marcador
+      function updateBoxPosition() {
+        if (isMarkerVisible) {
+          const markerPosition = marker.object3D.position;
+          box.object3D.position.set(
+            markerPosition.x,
+            markerPosition.y,
+            markerPosition.z
+          );
+        }
+      }
+
+      // Evento para capturar o movimento do marcador e atualizar o cubo
+      marker.addEventListener('markerFound', function () {
+        console.log('Marcador detectado!');
+        isMarkerVisible = true; // Define que o marcador está visível
+      });
+
+      marker.addEventListener('markerLost', function () {
+        console.log('Marcador perdido!');
+        isMarkerVisible = false; // Define que o marcador não está mais visível
+        box.object3D.position.set(9.9, 9.9, 9.9); // Define a posição do cubo para 9.9, 9.9, 9.9
+      });
+
+      // Atualiza a verificação de colisão e posição do cubo a cada 100ms
+      setInterval(() => {
+        updateBoxPosition();
+        checkCollision();
+      }, 100);
+
+      // Selecionar o elemento da esfera
+      // Utilizar um nome diferente para a variável, como 'mergedSphere'
+      const mergedSphere = document.querySelector('#sphere-merged');
+
+      // Adicionar ouvinte para a última animação para reiniciar a sequência
+      mergedSphere.addEventListener('animationcomplete__2', () => {
+        // Reiniciar a animação, emitindo o evento inicial
+        mergedSphere.emit('start-animation');
+      });
+
+      // Emitir o evento inicial para começar a animação
+      mergedSphere.emit('start-animation');
+    </script>
+  </body>
+</html>
