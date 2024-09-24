@@ -8,22 +8,50 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <!-- Carregar AR.js para A-Frame -->
     <script src="https://rawcdn.githack.com/jeromeetienne/ar.js/1.7.7/aframe/build/aframe-ar.js"></script>
+
+    <!-- Importar a fonte Bungee Spice -->
     <style>
-      body,
-      html {
+      @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          
+      body, html {
         margin: 0;
         padding: 0;
         overflow: hidden;
       }
+      
+      .press-start-2p-regular {
+        font-family: "Press Start 2P", system-ui;
+        font-weight: 400;
+        font-style: normal;
+      }
+      
       #score {
         position: absolute;
         top: 20px;
         left: 20px;
-        font-size: 100px;
-        color: white;
-        background: rgba(0, 0, 0, 0.5);
+        font-size: 40px;
         padding: 10px;
         border-radius: 8px;
+        color: transparent; /* Faz o texto transparente para mostrar o gradiente */
+        background: linear-gradient(to top, #505e91, #dfdfdf); /* Gradiente */
+        -webkit-background-clip: text; /* Aplica o gradiente no texto */
+        background-clip: text;
+        -webkit-text-stroke: 1.5px #575757; /* Contorno ao texto */
+        /* text-stroke: 1.5px #2c3248; Removido para evitar erro */
+      }
+
+      #score-pontos {
+        position: absolute;
+        top: 60px;
+        left: 20px;
+        font-size: 60px;
+        padding: 10px;
+        border-radius: 8px;
+        color: transparent; /* Faz o texto transparente para mostrar o gradiente */
+        background: linear-gradient(to top, #fa6800, #ffd035); /* Gradiente */
+        -webkit-background-clip: text; /* Aplica o gradiente no texto */
+        background-clip: text;
+        -webkit-text-stroke: 1.5px #575757;
       }
 
       #shot {
@@ -33,18 +61,42 @@
         transform: translate(-50%, -50%);
         font-size: 50px;
         color: white;
-        /* background: rgba(0, 0, 0, 0.5); */
         padding: 10px;
         border-radius: 8px;
         display: none; /* Esconde o elemento inicialmente */
+        
+        /* Define a animação */
+        animation: colorChange 0.2s infinite;
+      }
+
+      /* Define os quadros da animação de mudança de cor */
+      @keyframes colorChange {
+        0% {
+          color: orange;
+        }
+        20% {
+          color: white;
+        }
+        40% {
+          color: red;
+        }
+        60% {
+          color: white;
+        }
+        80% {
+          color: blue;
+        }
+        60% {
+          color: white;
+        }
       }
     </style>
   </head>
   <body>
-    <!-- Exibir a pontuação -->
-    <div id="score">Pontuação: 0</div>
-
-    <div id="shot">+1</div>
+    <!-- Exibir a pontuação com a nova fonte -->
+    <div id="score" class="press-start-2p-regular">PONTOS</div>
+    <div id="score-pontos" class="press-start-2p-regular">0000</div>
+    <div id="shot" class="press-start-2p-regular">+1</div>
 
     <!-- AR.js setup -->
     <a-scene embedded arjs>
@@ -91,8 +143,9 @@
 
       // Função para atualizar a pontuação na tela
       function updateScore() {
-        const scoreElement = document.getElementById('score');
-        scoreElement.innerHTML = `Pontuação: ${score}`;
+        const scoreElement = document.getElementById('score-pontos');
+        const formattedScore = score.toString().padStart(4, '0');
+        scoreElement.innerHTML = `${formattedScore}`;
       }
 
       // Função para verificar a colisão entre a esfera e o cubo
@@ -107,7 +160,9 @@
         console.log(spherePosition);
         console.log("teste");
         console.log("##########################");
+        console.log("##########################");
         console.log(distance);
+        console.log("##########################");0
         console.log("##########################");
         console.log(spherePosition.z);
         console.log("##########################");
